@@ -1,37 +1,41 @@
+// config/db.js
 const { MongoClient, ObjectId } = require('mongodb');
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables
 
-const url = process.env.MONGO_URI;
+
+// MongoDB Connection URL
+// const url = 'mongodb://localhost:27017';
+const url = process.env.MONGO_URI; // Use MONGO_URI from .env
+
+
+const client = new MongoClient(url);
+
+// Database Name
 const dbName = 'expensetracker';
 
 let db, usersCollection, expensesCollection;
-let client;
 
+// Function to connect to MongoDB
 const connectDB = async () => {
   try {
-    if (!client) {
-      client = new MongoClient(url, {
-        maxPoolSize: 20, // Increases performance by limiting open connections
-        serverSelectionTimeoutMS: 5000, // Faster failure if MongoDB is unreachable
-      });
-
-      await client.connect();
-      console.log(`✅ Connected to MongoDB: ${dbName}`);
-    }
-
-    db = client.db(dbName);
-    usersCollection = db.collection('users');
-    expensesCollection = db.collection('expenses');
+    const connection = await client.connect();
+    db = connection.db(dbName); // Select the database
+    usersCollection = db.collection('users'); // Access the users collection
+    expensesCollection = db.collection('expenses'); // Access the expenses collection
+    console.log(`Connected to MongoDB: ${dbName}`);
   } catch (err) {
-    console.error('❌ MongoDB Connection Error:', err.message);
+    console.error('Error connecting to MongoDB:', err.message);
     process.exit(1);
   }
 };
 
-// Function to get collections
+// Function to get the users collection
 const getUsersCollection = () => usersCollection;
+
+// Function to get the expenses collection
 const getExpensesCollection = () => expensesCollection;
 
+// Export connection functions and collections
 module.exports = {
   connectDB,
   getUsersCollection,
